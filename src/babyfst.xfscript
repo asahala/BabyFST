@@ -1,0 +1,481 @@
+! ==============================================================
+! BabyFST (Morpho)phonology v2.0              asahala 2020-02-24
+! ==============================================================
+
+set flag-is-epsilon ON
+
+read lexc akkadian_noun_system.lexc
+define MorphologyNouns
+
+!read lexc akkadian_verb_system.lexc
+read lexc akkadian_verbs_new.lexc
+define MorphologyVerbs
+
+read lexc akkadian_other_new.lexc
+define Other
+
+read lexc akkadian_names_new.lexc
+define Names
+
+
+! ==============================================================
+! Phoneme system
+! ==============================================================
+
+define Yod [j|y] ;
+define Aleph [ʾ|x] ;
+define C [Aleph|b|d|g|h|k|l|m|n|p|q|r|s|ṣ|š|t|Ṫ|ṭ|z|w|Ẇ|Yod] ;
+define CStrong C - Aleph ;
+define V [a|e|i|u] ;
+define VLong [ā|ē|ī|ū] ;
+define VCont [â|ê|î|û] ;
+define VAny [V|VLong|VCont] ;
+define BackV [a|u|ā|ū] ;
+define Char [VAny|C] ;
+define Syllable [[ C VAny C ]|[ C VAny ]|[ VAny ]|[ VAny C ]] ;
+
+
+define Testi Ṅ -> n
+       .o. Ẋ (->) x
+       .o. Ẋ -> ʾ
+       .o. Ẇ -> w ;
+
+! ==============================================================
+! Feminine allomorphy defined here is redundant; rules cannot be
+! easily defined due to interaction with the syncope. Perhaps 
+! the only way would be to enumerate pVrVs and pVrs stems
+! separately and assign them to different sublexica.
+! ==============================================================
+
+def FeminineAllomorphy FEMT (->) t || VAny (C) %> _
+    .o.		   FEMT -> [ a t ] ;
+
+define VentiveAllomorphy [ NIM ] -> [ n i m ] || [ā|ū|♀] %> _
+      .o.                [ NIM ] -> [ a m ] || [ C | ♂ ] %> _
+      .o.                [ NIM ] -> [ m ] 
+      .o.                [ NI ] -> [ n i ] || [ā|ū] %> _
+      .o.                [ NI ] -> [ a ] || C %> _ ;
+
+define YaAllomorphy JA (->) [ y a ] || VAny %> _
+       .o.          JA -> a || [ ū | u | û ] %> _
+       .o.          JA -> ī
+       .o.          a (->) ā || _ %> [[y|k|š] [a|u|i]]
+       .o.          i (->) ī || _ %> [[y|k|š] [a|u|i]]  ;
+
+
+def Morphophonemes FeminineAllomorphy .o. VentiveAllomorphy .o. YaAllomorphy;
+
+! ==============================================================
+! Syncope: Omission of unstressed vowels as in purus -> pursam 
+! ==============================================================
+
+define Syncope V (->) 0 || V CStrong _ CStrong %> VAny
+       .o.     V (->) 0 || VAny %< CStrong _ CStrong %> VAny ;
+
+
+! ==============================================================
+! General lengthening of vowels before aleph as in 
+!
+! i+'huz -> īhuz
+! ==============================================================
+
+define VerbPrefixLengthening [ a %< [Aleph|w|j] ] (->) ā %<
+       .o.                   [ t a %< j ] (->) [t %< ī] 
+       .o.                   [ i %< [Aleph|w|j] ] -> ī %<
+       .o.                   [ e %< [Aleph|w|j] ] -> ē %<
+       .o.                   [ u %< [Aleph|w|j] ] -> ū %< ;
+
+! II-infirmae present stem constraints
+! TODO: Find an easier way
+define IIweakRestriction ♀ -> 0 || _ [ %> [a|u|ū|i|C] ]
+       .o.		 ♀ -> 0 || _ .#.
+       .o. 		 ♂ -> 0 || _ [ %> VAny] ;
+
+! Produce contracted variants of stems with long + short vowel
+! combinations: iqīaš -> iqâš
+define IIweakContraction [ā a] -> â 
+       .o. 		 [ē a] -> ê 
+       .o. 		 [ī a] (->) â 
+       .o.               [ū a] (->) â ;
+
+define VerbalAlternation VerbPrefixLengthening 
+       .o.               IIweakRestriction 
+       .o.               IIweakContraction ;
+
+! ==============================================================
+! General contractions over aleph and changes in weak radicals
+!
+! Deletions
+!   rabiʾtu -> rabītu               
+!   rabiʾātu -> rabiātu, rabiʾu -> rabīu
+!
+! Contractions
+!  rabiʾātu -> rabâtu
+!  ibniʾu -> ibnû
+!  rubaʾu -> rubû
+! ==============================================================
+
+define AlephDeletion [ i Aleph %> ] (->) ī
+       .o.	     Aleph (->) 0 || i _ %> BackV 
+       .o.           Aleph (->) 0 || _ .#. ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 37)
+define AlephContraction [ V Aleph %> [u|ū] ] (->) [ %> û ]
+       .o.              [ V Aleph %> [i|ī] ] (->) [ %> î ]
+       .o.              [ V Aleph %> [i|ī|e|ē] ] -> [ %> ê ]
+       .o.              [ [u|a] Aleph %> [a|ā] ] -> [ %> â ]
+       .o.              [ [i|e] Aleph %> [a|ā] ] (->) [ %> â ]
+       .o.              [ ā Aleph %> u ] (->) [ %> û ]
+       .o.              [ ā Aleph %> i ] (->) [ %> î ]
+       .o.              [ ā Aleph %> e ] (->) [ %> ê ]
+       .o.              [ ā Aleph %> a ] (->) [ %> â ]
+       .o.		Aleph (->) ʾ 
+       .o. [Ẋ|x] -> 0 ; ! FIX THIS 
+
+! @ MB|SB|NB|LB (Buccellati 1996: 38) TODO: #w -> 0
+define WawNasalization w (->) m
+       .o.	       [ w w ] (->) [ m m ] || VAny _ VAny 
+       .o.	       w (->) m || .#. _ ;
+
+! @ MB|SB|NB|LB (Kouwenberg 2011: 737)
+define WawDeletion [y|j|w] (->) 0 || .#. _ ;
+
+! @ MA|NA (Kouwenberg 2011: 371)
+define WawAssyrian [ w a ] (->) [ u ] || .#. _ 
+       .o.	   w (->) Aleph || VAny _ VAny 
+       .o.	   w (->) b || VAny _ VAny ; 
+
+define Contraction AlephDeletion 
+       .o. 	   WawNasalization 
+       .o.	   WawDeletion
+       .o.	   WawAssyrian
+       .o. 	   AlephContraction ;
+
+
+! ==============================================================
+! Feminine alternations
+!
+! Note that e-colored feminine suffixes may rarely occur with
+! stems that do not have /e/.
+!
+! FemEcolor          bēl+at -> bēl+et
+! FemVoicing         bišim+tu -> bišim+du 
+! ==============================================================
+
+! @ OB|MB|SB|NB|LB
+define FemEcolor [ a t ] (->) [ e t ] || [e|ē|ê] Char* %> _
+       .o.       [ ā t ] (->) [ ē t ] || [e|ē|ê] Char* %> _ ;
+
+define FemVoicing t (->) d || m %> _ ;
+
+define FeminineAssimilations [d|n|Aleph] (->) t || _ %> t
+       .o.		     t (->) ṭ || [q|ṭ] %> _ 
+       .o.		     [ m %> t ] (->) [ n %> t ]
+       .o.		     [ m %> t ] (->) [ n %> d ] 
+       .o.		     [ m %> t ] (->) [ t %> t ]
+       .o.		     [ [š|ṣ] %> t ] (->) [ l %> t ] 
+       .o.		     [ h %> t ] (->) [ h %> h ] 
+       .o.		     [ š %> t ] (->) [ s %> s ] ;
+
+define FeminineRules FemEcolor .o. FemVoicing .o. FeminineAssimilations;
+
+
+! ==============================================================
+! Assyrian  vowel harmony
+!
+! If there is at least one preceding syllable, assimilate /a/
+! of the penultimate open syllable into the vowel of the ultimate
+! syllable. Allow morpheme boundaries to exist
+! ==============================================================
+
+define Boundary [[%> (C)] | [(C) %>]] ;
+define LC [ Syllable Syllable* [[(%>) (C)] | [(C) (%>)]] ] ;
+
+! @ OA|MA|NA (Kouwenberg 2017)
+define VowelHarmony a (->) u || LC _ Boundary [u|ū] (%>) (C) .#. 
+       .o.	    a (->) i || LC _ Boundary [i|ī] (%>) (C) .#.
+       .o.	    a (->) e || LC _ Boundary [e|ē] (%>) (C) .#. ;
+
+
+! ==============================================================
+! Babylonian vowel harmony
+!
+! /a/ becomes /e/ if there is /i/ in the following syllable
+! ==============================================================
+
+! @ MB|SB|NB?|LB? (Kouwenberg 2011: 373)
+define VowelHarmonyBab a (->) e || _ (%>) C (%>) (C) i ;
+
+
+! ==============================================================
+! Assyrian variation of V:C and VCC
+! ==============================================================
+
+! @ OA|MA|NA
+define UtGemination [ ū t ] (->) [ u t t ] ;
+
+
+! ==============================================================
+! Loss of mimation
+! ==============================================================
+
+! @ MB|NB|LB|MA|NA (Kouwenberg 2011: 379)
+define RemoveMimation [ %> m ] (->) 0 || _ [ .#. | %> ] ;
+
+
+! ==============================================================
+! Late apocope of short vowels in Late Babylonian
+! ==============================================================
+
+! @ LB (Kouwenberg 2011: 384)
+! Must be handled on the morphological level!
+
+
+! ==============================================================
+! General assimilations
+!
+! Those marked with Bound are restricted to morpheme boundaries
+! 
+! N-assimilation should be composed first to avoid bleeding,
+! e.g. bišimtu -> bišindu and not bišimtu -> bišindu -> bišiddu
+!
+! TODO: Regroup by dialect
+!
+! NAssimilation       indin -> iddin
+! BoundBilabializat:  irub+ma -> irum+ma
+! BoundRegressiveT:   lemun+tu -> lemut+tu
+! Lateralization:     ištakar -> iltakar                     OB+
+! InfixalTAssimil:    iztakar -> izzakar
+! MAlveolarization:   imtahar -> indahar
+!                     liktum+šu -> liktun+šu                 NB
+!                     burrum+tu -> burrun+tu
+! BoundAssibilation:  bīt+šu -> bīs+su, bīt+su
+! RAssibilation       būr+tu -> būš+tu 
+! BoundSibilantShin   piris+tu -> piriš-tu
+! BoundGemination     iddin+ki -> iddik+ki
+! BoundAssimiliation  libin+tu -> libit+tu
+! ==============================================================
+
+! @ All
+define NAssimilation n (->) b || _ b
+      .o.     	     n (->) d || _ d
+      .o.     	     n (->) g || _ g
+      .o.     	     n (->) h || _ h
+      .o.     	     n (->) k || _ k
+      .o.     	     n (->) l || _ l
+      .o.     	     n (->) m || _ m
+      .o.     	     n (->) p || _ p
+      .o.     	     n (->) q || _ q
+      .o.     	     n (->) r || _ r
+      .o.     	     n (->) s || _ s
+      .o.     	     n (->) š || _ š
+      .o.     	     n (->) ṣ || _ ṣ
+      .o.     	     n (->) t || _ [t|Ṫ]
+      .o.     	     n (->) ṭ || _ ṭ
+      .o.     	     n (->) z || _ z
+      .o.     	     n (->) Aleph || _ Aleph
+      .o.     	     n (->) w || _ w ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 310)
+define BoundBilabialization [p|b|n] (->) m || _ %> m ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 310)
+define BoundRegressiveT [d|n|ṭ] (->) t || _ %> t ; 
+
+! @ MB|SB|MA|NA (Buccellati 1996: 37; Kouwenberg 2011: 371)
+define Lateralization š (->) l || _ (%>) [t|d|ṭ|s] ;
+
+! @ OB|SB|NB|LB (Buccellati 1996: 233)
+define InfixalTAssimilation Ṫ -> z || z _
+       .o.         	    Ṫ -> s || s _
+       .o.         	    Ṫ -> ṣ || ṣ _
+       .o.         	    Ṫ (->) ṭ || ṭ _ 
+       .o.         	    Ṫ (->) d || d _ 
+       .o.		    Ṫ (->) d || _ d
+       .o.		    Ṫ (->) s || _ s 
+       .o.		    Ṫ (->) z || _ z
+       .o.		    Ṫ (->) š || _ š 
+       .o.                  Ṫ (->) t;
+
+! @ MA|NA (Kouwenberg 2011: 371)
+define InfixalTEmphasis Ṫ (->) ṭ || q _ ;
+
+! @ MA|NA (Kouwenberg 2011: 371)
+define ShinAlveolar [ š b ] (->) [ s b ] ;
+
+! ... T -> d || _ q ... T -> d m_ ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 225)
+define BoundSibilantShin [ṣ|s|z] (->) š || _ %> t ; 
+
+! @ MB|SB|NB|LB (Buccellati 1996: 37)
+define MAlveolarization m (->) n || _ (%>) [t|d|ṭ|š] ;
+
+define MAlveolarizationK m (->) n || _ (%>) k ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 311; Kouwenberg 2011: 373)
+define BoundAssibilation [ [t|d|ṭ|Aleph|s|z|ṣ|š] %> š ] (->) [ s %> s ]
+       .o. 		 š (->) s || [t|d|ṭ] %> _ ;
+
+! @ NA (Kouwenberg 2011: 378)
+define LTtoSS [ [š|l] (%>) t ] (->) [ s (%>) s ] ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 39)
+define RAssimilation r (->) n || _ n ;
+
+define RAssibilation r (->) š || _ %> t ;
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996: 311-312)
+define BoundGemination n (->) k || _ %> k
+        .o.            n (->) š || _ %> š
+	.o.            m (->) n || _ %> n
+        .o.            m (->) š || _ %> š
+        .o.            m (->) k || _ %> k 
+	.o.	       m (->) Aleph || _ %> Aleph 
+	.o.	       [ m %> š ] (->) [ s %> s ] ;
+
+define BoundAssimilation Aleph (->) š || _ %> š ;
+
+define ŠAlveolarization š (->) s || _ s ;
+
+define Assimilations NAssimilation
+       .o.	     BoundBilabialization
+       .o.	     BoundRegressiveT
+       .o.	     Lateralization
+       .o.           InfixalTAssimilation
+       .o.           InfixalTEmphasis
+       .o.           ShinAlveolar
+       .o.           BoundSibilantShin
+       .o.           MAlveolarization
+       .o.           MAlveolarizationK
+       .o.           BoundAssibilation
+       .o.           LTtoSS
+       .o.           RAssimilation
+       .o.           RAssibilation
+       .o.           BoundGemination
+       .o.           BoundAssimilation
+       .o.           ŠAlveolarization ;
+
+
+! ==============================================================
+! General dissimilations
+!
+! Note that dissimilations must be composed before assimilations
+! to avoid bleeding, e.g. irubma -> irumma -> irunma.
+! The bleeding should not occur vice versa, as the assimilation 
+! should just produce the initial state for dissimilation, e.g.
+! inaddin -> ( inandin | inamdin ) -> inaddin
+!
+! DissimGeminates:    inaddin -> inandin
+! DissimGeminatesM:   inaddin -> inamdin
+! ==============================================================
+
+! @ MB|SB|NB|LB (Buccellati 1996: 39)
+define DissimGeminates b (->) m || _ b
+       .o.             m (->) n || _ m
+       .o.             d (->) n || _ d
+       .o.             z (->) n || _ z
+       .o.             g (->) n || _ g ;
+
+! @ SB|NB|LB (Oracc)
+define DissimGeminatesM b (->) n || _ b
+       .o.		d (->) m || _ d
+       .o.		z (->) m || _ z 
+       .o.		g (->) m || _ g ; 
+
+define Dissimilations DissimGeminates .o. DissimGeminatesM ;
+
+
+! ==============================================================
+! Metatheses
+! ==============================================================
+
+! @ OB|MB|SB|NB|LB (Buccellati 1996:233)
+define Metatheses [ š i t ] (->) [ t i š ] || .#. _
+       .o.        [ z i t ] (->) [ t i z ] || .#. _
+       .o.        [ s i t ] (->) [ t i s ] || .#. _
+       .o.        [ ṣ i t ] (->) [ t i ṣ ] || .#. _ ;
+
+! ==============================================================
+! Intonation
+! ==============================================================
+
+define Intonation a (->) â || _ .#.
+       .o.        i (->) i || _ .#.
+       .o.        u (->) û || _ .#.
+       .o.        e (->) ê || _ .#. ;
+
+define MALengthening [a|â] (->) ā || _ %> [ m a .#. ]
+       .o.	     [u|û] (->) ū || _ %> [ m a .#. ]
+       .o.	     [i|î] (->) ī || _ %> [ m a .#. ] 
+       .o.           [e|ê] (->) ē || _ %> [ m a .#. ] ;
+
+! ==============================================================
+! Normalizations
+! ==============================================================
+
+define NormalizeYod Yod (->) j .o. Yod (->) y ;
+
+define Normalization NormalizeYod ;
+
+
+! ==============================================================
+! Removal of meta-characters and illegal sequences caused by
+! overgeneration or imperfect grammatical definitions
+! ==============================================================
+
+define RemoveMorphemeBoundaries [ %< | %> ] -> 0 ;
+
+define MarkIllegal [[ y Char* j ] |
+                    [ j Char* y ] |
+		    [ ♀ | ♂ | Ṫ ] |
+                    [ u i ] |
+		    [ ū i C - n ]
+                    [ ā a ] | [ a ā ] | 
+                    [ ī i ] | [ i ī ] |
+                    [ ē e ] | [ e ē ] | 
+                    [ ū u ] | [ u ū ] |
+		    [ V VCont ] | [ VCont V ] |
+		    [ VLong VCont ] | [ VCont VLong ] |
+		    [ VLong VLong ] | [ VCont VCont ] |
+		    [ C C C ] ] -> "^" 
+   .o.              [ C C ] -> "^" || _ .#. 
+   .o.              [ C C ] -> "^" || .#. _ ; 
+
+define FilterIllegal [ ? - "^" ]* ;
+
+def Cleanup RemoveMorphemeBoundaries
+   .o.      MarkIllegal 
+   .o.      FilterIllegal ;
+
+
+! ==============================================================
+! Compose regular expression
+! ==============================================================
+
+regex  [ MorphologyNouns | MorphologyVerbs | Names | Other ] 
+   .o. Morphophonemes
+   .o. Syncope
+   .o. Testi
+   .o. VerbalAlternation
+   .o. Contraction
+   .o. FeminineRules
+   .o. UtGemination
+   .o. RemoveMimation
+   .o. VowelHarmonyBab
+   .o. VowelHarmony
+   .o. Dissimilations
+   .o. Assimilations
+   .o. Metatheses
+   .o. Intonation
+   .o. MALengthening
+   .o. Normalization
+   .o. Cleanup ;
+
+set flag-is-epsilon OFF
+
+! FOMA FST
+save stack akkadian.fomabin
+
+! HFST FST
+! save stack akkadian.hfst
