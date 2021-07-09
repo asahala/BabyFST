@@ -1,4 +1,5 @@
-# BabyFST
+![alt text](https://www.mv.helsinki.fi/home/asahala/img/babyfst.png)
+
 Babylonian Finite-State Morphology v. 2.0
 
 # Requirements
