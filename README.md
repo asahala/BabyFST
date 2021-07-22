@@ -33,6 +33,14 @@ If you use BabyFST, redistribute or modify it, cite the paper below.
     ISBN = "979-10-95546-34-4",
 }
 ```
+# Errata for the publication
+
+In Section 2.4, the paper should read: 1.4 million words occurring in texts labeled to contain Akkadian have been lemmatized or POS-tagged. Thus this figure also contains languages other than Akkadian in multilingual texts, and words that have not been given a lemma because they are too broken, numbers, etc. In reality about 1.3 million words in lemmatized/POS-tagged texts are explicitly labeled as Akkadian, and of these all are not given lemmas due to the aforementioned reasons.
+
+This is an unfortunate error that occurs in several word count statements about Korp-Oracc due to my mistake in a Google Docs sheet about the 2019 Korp-Oracc data.
+
+See also ```./eval``` for revised results with explicitly labeled data without overlapping inputs.
+
 # Acknowledgements
 
 This piece of software would not have been possible without the hard work of dozens of Assyriologists lemmatizing the Akkadian texts in the [Oracc](http://oracc.org) corpus: Jamie Novotny, Laurie Pearce, John Carnahan, Philip Jones, Alexa Bartelmus, Cristopher Bravo, Frauke Weierhäuser, Giulia Lentini, Jay Cristostomo, Joshua Jeffers, Melanie Groß, Mikko Luukko, Nathan Morello, Poppy Tushingham, Talia Prussin (and many others whose names I do not know).
