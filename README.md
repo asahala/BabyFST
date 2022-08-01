@@ -44,3 +44,5 @@ See also ```./eval``` for revised results with explicitly labeled data without o
 # Acknowledgements
 
 This piece of software would not have been possible without the hard work of dozens of Assyriologists lemmatizing the Akkadian texts in the [Oracc](http://oracc.org) corpus: Jamie Novotny, Laurie Pearce, John Carnahan, Philip Jones, Alexa Bartelmus, Cristopher Bravo, Frauke Weierhäuser, Giulia Lentini, Jay Cristostomo, Joshua Jeffers, Melanie Groß, Mikko Luukko, Nathan Morello, Poppy Tushingham, Talia Prussin (and many others whose names I do not know).
+
+//testi
