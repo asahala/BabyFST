@@ -14,7 +14,7 @@ kaspam
 iddin
 ```
 
-Now run ```cat input.txt | ./flookup -x akkadian.foma > output.txt``` where ```akkadian.foma```is a compiled transducer file. The results can be read from ```output.txt```. Analyses will be separated by empty line.
+Now run ```cat input.txt | ./flookup -x akkadian.foma > output.txt``` where ```akkadian.foma```is a compiled transducer file. The results can be read from ```output.txt```. Analyses will be separated by empty line. See example script in ```/eval/evaluate-data.sh```.
 
 # Recompile
 Use files in `src` folder.
