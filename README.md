@@ -5,6 +5,17 @@ Babylonian Finite-State Morphology v. 2.0
 # Requirements
 For using the transducer you need Foma https://fomafst.github.io/. For evaluation you will need the HFST PyPi https://pypi.org/project/hfst/.
 
+# How to run
+One way to run BabyFST is to use Foma's flookup. For example, create ```input.txt``` file that contains transcribed words one word per line:
+
+```
+šarru
+kaspam
+iddin
+```
+
+Now run ```cat input.txt | ./flookup -x akkadian.foma > output.txt``` where ```akkadian.foma```is a compiled transducer file. The results can be read from ```output.txt```. Analyses will be separated by empty line.
+
 # Recompile
 Use files in `src` folder.
 
