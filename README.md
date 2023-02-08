@@ -2,6 +2,9 @@
 
 Babylonian Finite-State Morphology v. 2.0
 
+# Update
+For lemmatization and POS-tagging, use (BabyLemmatizer 2.0)[https://github.com/asahala/BabyLemmatizer]. It can produce unambiguous lemmatization and POS-tagging directly from transliteration.
+
 # Requirements
 For using the transducer you need Foma https://fomafst.github.io/. For evaluation you will need the HFST PyPi https://pypi.org/project/hfst/.
 
